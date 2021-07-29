@@ -1,11 +1,24 @@
-import React, {useRef} from 'react';
+import React, {useRef, useState } from 'react';
+import CreateUser from './CreateUser';
 import Hello from './hello';
 import InputSample from './InputSample';
 import UserList from './UserList';
 
 
 function App() {
-  const users =[
+  const [inputs, setInputs] = useState({
+    username:'',
+    emaili:''
+  });
+  const { username, email} = inputs;
+  const onChange = e =>{
+    const { name, value } = e.target;
+    setInputs({
+      ...inputs,
+      [name]:value
+    });
+  }
+  const [users, setUsers] = useState([
     {
         id :1,
         username : 'velopert',
@@ -21,17 +34,33 @@ function App() {
         username : 'lis',
         email : 'lis@gmail.com'
     }
+    //spread 연산자
 
-    
-];
+]);
   const nextId = useRef(4);
 
   const onCreate = () => {
-    console.log(nextId.current);
-    nextId.current += 1;
+    const user = {
+      id: nextId.current,
+      username,
+      email,
+    };
+    setUsers([...users,user]);
+    setInputs({
+    username: '',
+    email:''
+    });
   }
   return (
+    <>
+    <CreateUser
+      username={username}
+      email={email}
+      onChange={onChange}
+      onCreate={onCreate}
+    />
     <UserList users={users}/>
+    </>
   )
 }
 
