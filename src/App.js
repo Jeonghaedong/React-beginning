@@ -45,7 +45,8 @@ function App() {
       username,
       email,
     };
-    setUsers([...users,user]);
+    //setUsers([...users, user]); 두가지방법
+    setUsers([users.concat(user)]);
     setInputs({
     username: '',
     email:''
