@@ -22,17 +22,21 @@ function App() {
     {
         id :1,
         username : 'velopert',
-        email: 'public.velopert@gmail.com'
+        email: 'public.velopert@gmail.com',
+        active : true,
+
     },
     {
         id :2,
         username : 'tester',
-        email: 'tester@example.com'
+        email: 'tester@example.com',
+        active : false,
     },
     {
         id :3,
         username : 'lis',
-        email : 'lis@gmail.com'
+        email : 'lis@gmail.com',
+        active : false,
     }
     //spread 연산자
 
@@ -45,13 +49,26 @@ function App() {
       username,
       email,
     };
-    //setUsers([...users, user]); 두가지방법
-    setUsers([users.concat(user)]);
+    setUsers([...users, user]); 
+    //setUsers([users.concat(user)]); 두가지방법
     setInputs({
     username: '',
     email:''
     });
+    nextId.current += 1;
   }
+
+    const onRemove = id => {
+      setUsers(users.filter(user => user.id !== id));
+    };
+
+    const onToggle = id => {
+      setUsers(users.map(
+        user => user.id === id
+        ? { ...user, active: !user.active }
+        : user
+      ));
+    };
   return (
     <>
     <CreateUser
@@ -60,7 +77,7 @@ function App() {
       onChange={onChange}
       onCreate={onCreate}
     />
-    <UserList users={users}/>
+    <UserList users={users} onRemove={onRemove} onToggle={onToggle}/>
     </>
   )
 }
