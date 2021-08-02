@@ -1,29 +1,17 @@
-import React, {useRef, useState, useMemo, useCallback } from 'react';
+import React, {useRef, useReducer, useMemo, useCallback } from 'react';
 import CreateUser from './CreateUser';
-import Hello from './hello';
-import InputSample from './InputSample';
 import UserList from './UserList';
 
 function countActiveUsers(users){
     console.log('활성 사용자수');
     return users.filter( user => user.active).length;
 }
-
-function App() {
-  const [inputs, setInputs] = useState({
+const initialState ={
+  inputs: {
     username:'',
-    emaili:''
-  });
-
-  const { username, email} = inputs;
-  const onChange = useCallback(e =>{
-    const { name, value } = e.target;
-    setInputs({
-      ...inputs,
-      [name]:value
-    });
-  }, [inputs]);
-  const [users, setUsers] = useState([
+    email:''
+  },
+  users : [
     {
         id :1,
         username : 'velopert',
@@ -44,47 +32,57 @@ function App() {
         active : false,
     }
     //spread 연산자
+  ]
+}
+function reducer(state, action){
+  switch (action.type){
+    case 'CHANGE_INPUT':
+      return {
+        ...state,
+        inputs: {
+          ...state.inputs,
+          [action.name]: action.value
+        }
+      };
+      case 'CREATE_USER':
+      return{
+        inputs : initialState.inputs,
+        users : state.users.concat(action.user)
+      }
+      default : throw new Error('Unhandled action');
+  }
+}
+function App() {
+  const [state, dispatch] = useReducer(reducer, initialState); //state 현재상태, dispatch 액션발생함수
+  const nextId = useRef(4); // 기존 3개가 등록되어있어
+  const { users } = state;
+  const { username, email } =state.inputs;
 
-]);
-  const nextId = useRef(4);
+  const onChange = useCallback( e => { //
+    const {name, value} = e.target; // 이름과 값을 추출
+    dispatch({ //어떤액션을 주는가
+      type: 'CHANGE_INPUT',
+      name,
+      value
+    })
+  }, []);
 
   const onCreate = useCallback(() => {
-    const user = {
-      id: nextId.current,
-      username,
-      email,
-    };
-    setUsers([...users, user]); 
-    //setUsers([users.concat(user)]); 두가지방법
-    setInputs({
-    username: '',
-    email:''
+    dispatch({
+      type: 'CREATE_USER',
+      user: {
+        id: 1,
+        username,
+        email,
+      }
     });
     nextId.current += 1;
-  }, [username, email, users]);
-
-    const onRemove = useCallback(id => {
-      setUsers(users.filter(user => user.id !== id));
-    }, [users]);
-
-    const onToggle = useCallback(id => {
-      setUsers(users.map(
-        user => user.id === id
-        ? { ...user, active: !user.active }
-        : user
-      ));
-    }, [users]);
-    const count = useMemo(() => countActiveUsers(users), [users]);
+  },[username, email])
   return (
     <>
-    <CreateUser
-      username={username}
-      email={email}
-      onChange={onChange}
-      onCreate={onCreate}
-    />
-    <UserList users={users} onRemove={onRemove} onToggle={onToggle}/>
-    <div>활성자수 : {count}</div>
+    <CreateUser username={username} email={email} onChange={onchange} onCreate={onCreate} />
+    <UserList users={users} />
+    <div>활성자수 : 0 </div>
     </>
   )
 }
